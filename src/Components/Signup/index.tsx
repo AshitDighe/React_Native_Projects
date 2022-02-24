@@ -2,13 +2,30 @@ import React, { FC, useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import Input from '../Form/FormInput';
 import Button from '../Form/Button';
+import firebase from 'firebase/compat/app'
+// import { auth, handleUserProfile, GoogleProvider } from './../../firebase/utils';
 const Signup  = (props:any) => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const signup =() => {
-       
+    const signup =async() => {
+        if(name && email && password){
+            try{
+                const { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
+
+           if(user) {
+                 await firebase.firestore().collection('users').doc(user.uid).set({name, email, password});
+             }
+
+            } catch (error) {
+                console.log(error);
+                
+            }
+
+        } else {
+            Alert.alert(`Error`, `Missing Fields`);
+        }
     }
 
     return (
@@ -20,7 +37,7 @@ const Signup  = (props:any) => {
             <Button title="Sign Up" onPress={signup} />
             <View style={styles.loginText}>
                 <Text style={{marginHorizontal: 5}}>Already Have an Account?</Text>
-                <TouchableOpacity style={{marginHorizontal: 5}}>
+                <TouchableOpacity onPress={() => props.navigation.navigate('signin')} style={{marginHorizontal: 5}}>
                     <Text style={{color: 'rgba(81,135,200,1)'}}>Login Here</Text>
                 </TouchableOpacity>
             </View>
